@@ -1,38 +1,14 @@
-import axios, { type AxiosResponse } from "axios";
-import { type Note } from "../types/note";
+import axios from "axios";
+import type { Note, NoteTag } from "../types/note";
+import toast from "react-hot-toast";
 
-const API_BASE_URL = "https://notehub-public.goit.study/api";
+axios.defaults.baseURL = "https://notehub-public.goit.study/api";
+const myKey = import.meta.env.VITE_NOTEHUB_TOKEN;
+const myApiKey = `Bearer ${myKey}`;
+axios.defaults.headers.common["Authorization"] = myApiKey;
 
-const api = axios.create({
-  baseURL: API_BASE_URL,
-  headers: {
-    Authorization: `Bearer ${import.meta.env.VITE_NOTEHUB_TOKEN}`,
-    "Content-Type": "application/json",
-  },
-});
-
-export interface FetchNotesResponse {
-  data: Note[];
-  pagination: {
-    page: number;
-    perPage: number;
-    totalPages: number;
-    totalCount: number;
-  };
-}
-
-export interface CreateNoteRequest {
-  title: string;
-  content: string;
-  tag: string;
-}
-
-export interface CreateNoteResponse {
-  data: Note;
-}
-
-export interface DeleteNoteResponse {
-  data: Note;
+if (!myKey) {
+  toast("VITE_NOTEHUB_TOKEN is not defined");
 }
 
 export interface FetchNotesParams {
@@ -41,33 +17,51 @@ export interface FetchNotesParams {
   search?: string;
 }
 
-export const fetchNotes = async (
-  params?: FetchNotesParams
-): Promise<FetchNotesResponse> => {
-  const response: AxiosResponse<FetchNotesResponse> = await api.get("/notes", {
+export interface FetchNotesResponse {
+  page: number;
+  data: Note[];
+  total_pages: number;
+  perPage: number;
+}
+
+interface RawFetchNotesResponse {
+  notes: Note[];
+  totalPages: number;
+}
+
+export const fetchNotes = async ({
+  page = 1,
+  perPage = 12,
+  search,
+}: FetchNotesParams): Promise<FetchNotesResponse> => {
+  const response = await axios.get<RawFetchNotesResponse>("/notes", {
     params: {
-      page: params?.page || 1,
-      perPage: params?.perPage || 12,
-      search: params?.search || "",
+      page,
+      perPage,
+      ...(search !== "" && { search: search }),
     },
   });
 
+  const raw = response.data;
+
+  return {
+    page,
+    perPage,
+    data: raw.notes,
+    total_pages: raw.totalPages,
+  };
+};
+
+export const createNote = async (note: {
+  title: string;
+  content: string;
+  tag: NoteTag;
+}): Promise<Note> => {
+  const response = await axios.post("/notes", note);
   return response.data;
 };
 
-export const createNote = async (
-  noteData: CreateNoteRequest
-): Promise<CreateNoteResponse> => {
-  const response: AxiosResponse<CreateNoteResponse> = await api.post(
-    "/notes",
-    noteData
-  );
-  return response.data;
-};
-
-export const deleteNote = async (id: string): Promise<DeleteNoteResponse> => {
-  const response: AxiosResponse<DeleteNoteResponse> = await api.delete(
-    `/notes/${id}`
-  );
+export const deleteNote = async (id: number): Promise<Note> => {
+  const response = await axios.delete(`/notes/${id}`);
   return response.data;
 };

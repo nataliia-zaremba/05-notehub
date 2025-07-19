@@ -7,6 +7,7 @@ import Modal from "../Modal/Modal";
 import NoteForm from "../NoteForm/NoteForm";
 import { fetchNotes } from "../../services/noteService";
 import css from "./App.module.css";
+
 const useDebounce = (value: string, delay: number) => {
   const [debouncedValue, setDebouncedValue] = useState(value);
 
@@ -31,7 +32,11 @@ const App: React.FC = () => {
 
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
 
-  const { data, isLoading, error } = useQuery({
+  const {
+    data: notesData,
+    isLoading,
+    error,
+  } = useQuery({
     queryKey: ["notes", currentPage, debouncedSearchTerm],
     queryFn: () =>
       fetchNotes({
@@ -65,8 +70,8 @@ const App: React.FC = () => {
   if (isLoading) return <div>Loading...</div>;
   if (error) return <div>Error loading notes</div>;
 
-  const notes = data?.data || [];
-  const totalPages = data?.pagination.totalPages || 0;
+  const notes = notesData?.data || [];
+  const totalPages = notesData?.total_pages || 0;
 
   return (
     <div className={css.app}>
