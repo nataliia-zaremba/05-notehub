@@ -1,5 +1,5 @@
 import axios from "axios";
-import type { Note, NoteTag } from "../types/note";
+import type { Note, CreateNoteRequest } from "../types/note";
 import toast from "react-hot-toast";
 
 axios.defaults.baseURL = "https://notehub-public.goit.study/api";
@@ -52,11 +52,7 @@ export const fetchNotes = async ({
   };
 };
 
-export const createNote = async (note: {
-  title: string;
-  content: string;
-  tag: NoteTag;
-}): Promise<Note> => {
+export const createNote = async (note: CreateNoteRequest): Promise<Note> => {
   const response = await axios.post("/notes", note);
   return response.data;
 };

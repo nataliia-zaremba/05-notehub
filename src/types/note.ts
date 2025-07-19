@@ -1,5 +1,13 @@
+export type NoteTagType = "Todo" | "Work" | "Personal" | "Meeting" | "Shopping";
+
+export interface CreateNoteRequest {
+  title: string;
+  content: string;
+  tag: NoteTagType;
+}
+
 export interface Note {
-  id: string;
+  id: number;
   title: string;
   content: string;
   tag: string;
@@ -8,6 +16,6 @@ export interface Note {
 }
 
 export interface NoteTag {
-  id: string;
+  id: number;
   name: string;
 }

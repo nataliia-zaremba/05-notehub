@@ -1,7 +1,9 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
-import { createNote, type CreateNoteRequest } from "../../services/noteService";
+import { createNote } from "../../services/noteService";
+
+import type { CreateNoteRequest } from "../../types/note";
 import css from "./NoteForm.module.css";
 
 interface NoteFormProps {
@@ -42,7 +44,7 @@ const NoteForm: React.FC<NoteFormProps> = ({ onSuccess, onCancel }) => {
   };
 
   return (
-    <Formik
+    <Formik<CreateNoteRequest>
       initialValues={initialValues}
       validationSchema={validationSchema}
       onSubmit={handleSubmit}
