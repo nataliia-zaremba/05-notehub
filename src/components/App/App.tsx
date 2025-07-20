@@ -44,6 +44,7 @@ const App: React.FC = () => {
         perPage,
         search: debouncedSearchTerm,
       }),
+    placeholderData: (previousData) => previousData,
   });
 
   const handleSearch = (term: string) => {

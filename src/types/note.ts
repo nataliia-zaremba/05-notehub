@@ -10,12 +10,7 @@ export interface Note {
   id: number;
   title: string;
   content: string;
-  tag: string;
+  tag: NoteTagType;
   createdAt: string;
   updatedAt: string;
-}
-
-export interface NoteTag {
-  id: number;
-  name: string;
 }

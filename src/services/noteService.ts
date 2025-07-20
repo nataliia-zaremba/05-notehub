@@ -8,7 +8,8 @@ const myApiKey = `Bearer ${myKey}`;
 axios.defaults.headers.common["Authorization"] = myApiKey;
 
 if (!myKey) {
-  toast("VITE_NOTEHUB_TOKEN is not defined");
+  toast.error("VITE_NOTEHUB_TOKEN is not defined");
+  throw new Error("VITE_NOTEHUB_TOKEN is required");
 }
 
 export interface FetchNotesParams {
@@ -29,35 +30,60 @@ interface RawFetchNotesResponse {
   totalPages: number;
 }
 
+interface CreateNoteResponse {
+  note: Note;
+}
+
+interface DeleteNoteResponse {
+  note: Note;
+}
+
 export const fetchNotes = async ({
   page = 1,
   perPage = 12,
   search,
 }: FetchNotesParams): Promise<FetchNotesResponse> => {
-  const response = await axios.get<RawFetchNotesResponse>("/notes", {
-    params: {
+  try {
+    const response = await axios.get<RawFetchNotesResponse>("/notes", {
+      params: {
+        page,
+        perPage,
+        ...(search !== "" && { search: search }),
+      },
+    });
+
+    const raw = response.data;
+
+    return {
       page,
       perPage,
-      ...(search !== "" && { search: search }),
-    },
-  });
-
-  const raw = response.data;
-
-  return {
-    page,
-    perPage,
-    data: raw.notes,
-    total_pages: raw.totalPages,
-  };
+      data: raw.notes,
+      total_pages: raw.totalPages,
+    };
+  } catch (error) {
+    toast.error("Failed to fetch notes");
+    throw error;
+  }
 };
 
 export const createNote = async (note: CreateNoteRequest): Promise<Note> => {
-  const response = await axios.post("/notes", note);
-  return response.data;
+  try {
+    const response = await axios.post<CreateNoteResponse>("/notes", note);
+    toast.success("Note created successfully");
+    return response.data.note;
+  } catch (error) {
+    toast.error("Failed to create note");
+    throw error;
+  }
 };
 
 export const deleteNote = async (id: number): Promise<Note> => {
-  const response = await axios.delete(`/notes/${id}`);
-  return response.data;
+  try {
+    const response = await axios.delete<DeleteNoteResponse>(`/notes/${id}`);
+    toast.success("Note deleted successfully");
+    return response.data.note;
+  } catch (error) {
+    toast.error("Failed to delete note");
+    throw error;
+  }
 };
